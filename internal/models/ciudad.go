@@ -7,3 +7,6 @@ type Ciudad struct {
 	PaisID uint `gorm:"not null" json:"pais_id"`
 	Pais   Pais `gorm:"foreignKey:PaisID"`
 }
+func (Ciudad) TableName() string {
+	return "ciudades"
+}

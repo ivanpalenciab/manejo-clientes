@@ -1,4 +1,30 @@
+basePath: /
+host: localhost:8080
 info:
   contact: {}
-paths: {}
+  description: API para gestión de negocios por suscripción
+  title: API Gestion Negocios
+  version: "1.0"
+paths:
+  /create-usuario:
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Crear usuario
+      tags:
+      - usuarios
 swagger: "2.0"

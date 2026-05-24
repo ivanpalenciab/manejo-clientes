@@ -7,7 +7,7 @@ package main
 // @BasePath /
 
 import (
-	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 
@@ -15,29 +15,33 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "my-api/docs"
+
+	"my-api/internal/database"
+	"my-api/internal/routes"
+
+	"github.com/gin-contrib/cors"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No se pudo cargar .env")
+	}
+
+	database.ConnectDB()
+
 	// Create a Gin router with default middleware (logger and recovery)
 	r := gin.Default()
+
+	// CORS
+	r.Use(cors.Default())
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Define a simple GET endpoint
-	r.GET("/ping", func(c *gin.Context) {
-		// Return JSON response
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	routes.UsuarioRoutes(r)
 
-	r.GET("/", func(c *gin.Context) {
-		// Return JSON response
-		c.JSON(http.StatusOK, gin.H{
-			"Hola": "Mundo",
-		})
-	})
+	log.Println("Servidor corriendo en puerto 8080")
 
-	// Start server on port 8080 (default)
-	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
-	r.Run()
+	r.Run(":8080")
 }

@@ -1,18 +1,20 @@
 package database
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"my-api/internal/models"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *pgxpool.Pool
+var DB *gorm.DB
 
-func ConnectDB() {
+func ConnectDB() *gorm.DB {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -21,7 +23,7 @@ func ConnectDB() {
 	sslmode := os.Getenv("DB_SSLMODE")
 
 	dsn := fmt.Sprintf(
-		"host=%s posrt%s user=%s password=%s dbname=%s sslmode=%s",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		host,
 		port,
 		user,
@@ -30,22 +32,38 @@ func ConnectDB() {
 		sslmode,
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	pool, err := pgxpool.New(ctx, dsn)
-
-	if err != nil {
-		log.Fatalf("Error creando pool de conexión: %v", err)
-	}
-
-	err = pool.Ping(ctx)
+	db, err := gorm.Open(
+		postgres.Open(dsn),
+		&gorm.Config{},
+	)
 
 	if err != nil {
 		log.Fatalf("No se pudo conectar a PostgreSQL: %v", err)
 	}
+	db.AutoMigrate(
+		&models.Usuario{},
+		&models.Empresa{},
+	)
 
-	DB = pool
+	sqlDB, err := db.DB()
+
+	if err != nil {
+		log.Fatalf("Error obteniendo instancia SQL DB: %v", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	err = sqlDB.Ping()
+
+	if err != nil {
+		log.Fatalf("Error haciendo ping a PostgreSQL: %v", err)
+	}
+
+	DB = db
 
 	log.Println("Conexión exitosa a PostgreSQL")
+
+	return db
 }
