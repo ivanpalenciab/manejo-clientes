@@ -40,6 +40,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	routes.UsuarioRoutes(r)
+	routes.EmpresaRoutes(r)
 
 	log.Println("Servidor corriendo en puerto 8080")
 

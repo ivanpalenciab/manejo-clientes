@@ -12,7 +12,6 @@ func CreateUser(usuario *models.Usuario) *gorm.DB {
 	result := connection.Create(&usuario)
 
 	return result
-
 }
 
 func GetUsers() ([]models.Usuario, error) {
